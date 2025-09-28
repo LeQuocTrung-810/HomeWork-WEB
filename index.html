@@ -1,0 +1,539 @@
+﻿<!doctype html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Quadratic Solver — TrungLe</title>
+    <style>
+        :root {
+            --bg: #0f1724;
+            --card: #0b1220aa;
+            --accent: #6ee7b7;
+            --accent-2: #60a5fa;
+            --muted: #9aa4b2;
+            --glass: rgba(255,255,255,0.03);
+            --glass-2: rgba(255,255,255,0.02);
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: Inter, "Segoe UI", Roboto, Arial;
+            background: radial-gradient(1200px 600px at 10% 10%, rgba(96,165,250,0.08), transparent 10%), radial-gradient(1000px 500px at 90% 85%, rgba(110,231,183,0.04), transparent 10%), var(--bg);
+            color: #e6eef6;
+        }
+
+        .wrap {
+            max-width: 1100px;
+            margin: 36px auto;
+            padding: 28px;
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: linear-gradient(180deg,var(--card), rgba(20,30,45,0.15));
+            border-radius: 14px;
+            padding: 18px;
+            box-shadow: 0 6px 24px rgba(2,6,23,0.6);
+            border: 1px solid rgba(255,255,255,0.03);
+            backdrop-filter: blur(6px);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 20px;
+            letter-spacing: 0.2px
+        }
+
+        .subtitle {
+            color: var(--muted);
+            font-size: 13px;
+            margin-top: 6px
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 12px;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.03);
+            background: var(--glass);
+            color: inherit;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .row {
+            display: flex;
+            gap: 12px;
+            align-items: center
+        }
+
+        .mini {
+            width: 80px
+        }
+
+        .btn {
+            margin-top: 16px;
+            display: inline-block;
+            padding: 10px 14px;
+            border-radius: 10px;
+            background: linear-gradient(90deg,var(--accent),var(--accent-2));
+            color: #052026;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 6px 18px rgba(96,165,250,0.08);
+        }
+
+            .btn.ghost {
+                background: transparent;
+                border: 1px solid rgba(255,255,255,0.04);
+                color: var(--muted);
+                font-weight: 600
+            }
+
+        .result {
+            font-family: "Courier New", monospace;
+            white-space: pre-wrap;
+            font-size: 14px;
+            color: #dbeafe;
+        }
+
+        .meta {
+            margin-top: 8px;
+            color: var(--muted);
+            font-size: 13px
+        }
+
+        .small {
+            font-size: 13px;
+            color: var(--muted)
+        }
+
+        .flex {
+            display: flex;
+            gap: 10px;
+            align-items: center
+        }
+
+        .canvasWrap {
+            background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+            padding: 10px;
+            border-radius: 10px
+        }
+
+        .infoItem {
+            margin-bottom: 8px
+        }
+
+        footer {
+            grid-column: 1/3;
+            text-align: center;
+            color: var(--muted);
+            margin-top: 12px;
+            font-size: 13px
+        }
+
+        .signature {
+            font-family: "Courier New", monospace;
+            color: #c7f9e0;
+            margin-top: 12px
+        }
+
+        .copyBtn {
+            background: transparent;
+            color: var(--muted);
+            border: 1px dashed rgba(255,255,255,0.03);
+            padding: 6px 8px;
+            border-radius: 8px;
+            cursor: pointer
+        }
+
+        .steps {
+            margin-top: 12px;
+            background: var(--glass-2);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--muted)
+        }
+
+        @media(max-width:900px) {
+            .wrap {
+                grid-template-columns: 1fr;
+                padding: 14px;
+            }
+
+            .card {
+                padding: 14px
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <!-- left panel: inputs -->
+        <div class="card">
+            <h1>Quadratic Solver</h1>
+            <div class="subtitle">Giải phương trình bậc 2 <em>ax² + bx + c = 0</em> — thiết kế bởi <strong>TrungLe</strong></div>
+
+            <label>a</label>
+            <input id="inpA" type="number" step="any" value="1" />
+
+            <label>b</label>
+            <input id="inpB" type="number" step="any" value="0" />
+
+            <label>c</label>
+            <input id="inpC" type="number" step="any" value="-1" />
+
+            <div class="row" style="margin-top:14px;">
+                <button id="btnSolve" class="btn">Solve</button>
+                <button id="btnClear" class="btn ghost">Clear</button>
+                <button id="btnCopyJson" class="copyBtn" title="Copy JSON result">Copy JSON</button>
+            </div>
+
+            <div class="meta" style="margin-top:14px;">
+                <label class="small"><input id="showSteps" type="checkbox" /> Hiện các bước tính</label>
+                <label class="small"><input id="autoUpdate" type="checkbox" checked /> Tự động cập nhật khi thay đổi input</label>
+            </div>
+
+            <div class="steps" id="stepsBox" style="display:none;">
+                <!-- dynamic steps content -->
+            </div>
+
+            <div class="signature" id="signatureBox">
+                <!-- ascii art and signature -->
+            </div>
+        </div>
+
+        <!-- right panel: results + canvas -->
+        <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+                <div>
+                    <h1 style="margin-bottom:2px">Kết quả</h1>
+                    <div class="subtitle">Delta, nghiệm, đồ thị</div>
+                </div>
+                <div class="small">TrungLe • Quadratic Assistant</div>
+            </div>
+
+            <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                <div class="card" style="padding:12px;background:transparent;border:none">
+                    <div class="infoItem"><strong>Nature:</strong> <span id="nature" class="small"></span></div>
+                    <div class="infoItem"><strong>Discriminant (Δ):</strong> <span id="delta" class="small"></span></div>
+                    <div class="infoItem"><strong>Root 1:</strong> <span id="root1" class="small"></span></div>
+                    <div class="infoItem"><strong>Root 2:</strong> <span id="root2" class="small"></span></div>
+                    <div style="margin-top:8px">
+                        <button id="btnCopyText" class="copyBtn">Copy human-readable</button>
+                    </div>
+                </div>
+
+                <div class="canvasWrap">
+                    <canvas id="graph" width="420" height="240" style="width:100%;height:160px;border-radius:8px;display:block"></canvas>
+                    <div class="small" style="margin-top:6px;color:var(--muted)">Đồ thị (tự động scale quanh đỉnh). Roots đánh dấu màu cam.</div>
+                </div>
+            </div>
+
+            <div style="margin-top:12px">
+                <pre id="raw" class="result">(Kết quả sẽ xuất hiện ở đây)</pre>
+            </div>
+        </div>
+
+        <footer>
+            Bài tập được làm bới Lung Quốc Trê Với sự đau đớn tột cùng
+        </footer>
+    </div>
+
+    <script>
+        (function () {
+            // Helpers
+            function fmtNum(x) {
+                if (x === null || x === undefined) return "";
+                if (isNaN(x)) return String(x);
+                // show up to 6 decimal, trim trailing zeros
+                var s = Number(x).toFixed(6);
+                s = s.replace(/\.?0+$/, "");
+                return s;
+            }
+
+            function compute(a, b, c) {
+                // returns object with discriminant, nature, roots (strings), rootsNum (numbers or null), steps
+                var out = { discriminant: null, nature: "", root1: "", root2: "", root1num: null, root2num: null, art: "", signature: "", steps: [] };
+                // signature: simple hash
+                function mkSig(a, b, c) {
+                    var s = Math.round((a * 1000 + b * 100 + c * 10)) % 10000;
+                    if (s < 0) s = -s;
+                    return "TrungLe#" + s;
+                }
+                out.signature = mkSig(a, b, c);
+
+                // art
+                out.art = "  ___  \\n / _ \\\\ \\n| (_) |  Quadratic solver by TrungLe\\n \\___/ ";
+
+                // handle a == 0
+                if (Math.abs(a) < 1e-12) {
+                    out.nature = "Not quadratic (a == 0)";
+                    out.steps.push("a==0 => it's not quadratic. Solve linear bx + c = 0 if possible.");
+                    if (Math.abs(b) > 1e-12) {
+                        var x = -c / b;
+                        out.root1num = x; out.root1 = fmtNum(x);
+                        out.root2 = "";
+                        out.steps.push("Linear solution: x = -c / b = " + fmtNum(x));
+                    } else {
+                        if (Math.abs(c) < 1e-12) {
+                            out.nature = "Infinite solutions (0 = 0)";
+                            out.steps.push("0 = 0 => infinite solutions");
+                        } else {
+                            out.nature = "No solution (contradiction)";
+                            out.steps.push("0x = nonzero => no solution");
+                        }
+                    }
+                    out.discriminant = null;
+                    return out;
+                }
+
+                var delta = b * b - 4 * a * c;
+                out.discriminant = delta;
+                out.steps.push("Δ = b² - 4ac = " + fmtNum(delta));
+
+                if (delta > 1e-12) {
+                    out.nature = "Two distinct real roots";
+                    var sqrt = Math.sqrt(delta);
+                    var x1 = (-b + sqrt) / (2 * a);
+                    var x2 = (-b - sqrt) / (2 * a);
+                    out.root1num = x1; out.root2num = x2;
+                    out.root1 = fmtNum(x1); out.root2 = fmtNum(x2);
+                    out.steps.push("x1 = (-b + √Δ) / (2a) = " + fmtNum(x1));
+                    out.steps.push("x2 = (-b - √Δ) / (2a) = " + fmtNum(x2));
+                } else if (Math.abs(delta) <= 1e-12) {
+                    out.nature = "One real root (double)";
+                    var x = -b / (2 * a);
+                    out.root1num = x; out.root2num = x;
+                    out.root1 = fmtNum(x); out.root2 = fmtNum(x);
+                    out.steps.push("x = -b / (2a) = " + fmtNum(x));
+                } else {
+                    out.nature = "Two complex roots";
+                    var real = -b / (2 * a);
+                    var imag = Math.sqrt(-delta) / (2 * Math.abs(a));
+                    // sign for imag depends on sign of a? standard display: ± i*imag
+                    out.root1 = fmtNum(real) + " + " + fmtNum(imag) + "i";
+                    out.root2 = fmtNum(real) + " - " + fmtNum(imag) + "i";
+                    out.steps.push("Complex roots: real part = " + fmtNum(real) + ", imag = " + fmtNum(imag));
+                }
+                return out;
+            }
+
+            // Canvas plot function
+            function plot(canvas, a, b, c, roots) {
+                var ctx = canvas.getContext("2d");
+                var W = canvas.width, H = canvas.height;
+                // clear
+                ctx.clearRect(0, 0, W, H);
+                // background
+                var g = ctx.createLinearGradient(0, 0, 0, H);
+                g.addColorStop(0, "rgba(255,255,255,0.02)");
+                g.addColorStop(1, "rgba(0,0,0,0.02)");
+                ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+                // compute vertex
+                var xv = -b / (2 * a);
+                var yv = a * xv * xv + b * xv + c;
+
+                // choose x-range centered at vertex
+                var span = Math.max(1, Math.abs(yv) * 0.6 + 4); // heuristic
+                // But better choose xrange by roots if real
+                if (roots && roots.length > 0 && !isNaN(roots[0])) {
+                    var rmin = Math.min.apply(null, roots);
+                    var rmax = Math.max.apply(null, roots);
+                    span = Math.max(span, (rmax - rmin) * 1.6);
+                    // ensure non-zero
+                    if (span < 2) span = 2;
+                }
+                var x0 = xv - span;
+                var x1 = xv + span;
+
+                // sample function to find y range
+                var samples = 200;
+                var ymin = Number.POSITIVE_INFINITY, ymax = Number.NEGATIVE_INFINITY;
+                for (var i = 0; i <= samples; i++) {
+                    var t = i / samples;
+                    var x = x0 + (x1 - x0) * t;
+                    var y = a * x * x + b * x + c;
+                    if (y < ymin) ymin = y;
+                    if (y > ymax) ymax = y;
+                }
+                // expand a bit
+                var ypad = (ymax - ymin) * 0.15;
+                ymin -= ypad; ymax += ypad;
+                if (ymin === ymax) {
+                    ymin -= 1; ymax += 1;
+                }
+
+                // transforms
+                function tx(x) { return (x - x0) / (x1 - x0) * W; }
+                function ty(y) { return H - (y - ymin) / (ymax - ymin) * H; }
+
+                // draw grid lines
+                ctx.strokeStyle = "rgba(255,255,255,0.03)";
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                for (var gx = Math.ceil(x0); gx <= Math.floor(x1); gx++) {
+                    var px = tx(gx);
+                    ctx.moveTo(px, 0); ctx.lineTo(px, H);
+                }
+                for (var gy = Math.ceil(ymin); gy <= Math.floor(ymax); gy++) {
+                    var py = ty(gy);
+                    ctx.moveTo(0, py); ctx.lineTo(W, py);
+                }
+                ctx.stroke();
+
+                // draw axes
+                var xAxisY = ty(0);
+                var yAxisX = tx(0);
+                ctx.strokeStyle = "rgba(255,255,255,0.12)";
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(0, xAxisY); ctx.lineTo(W, xAxisY);
+                ctx.moveTo(yAxisX, 0); ctx.lineTo(yAxisX, H);
+                ctx.stroke();
+
+                // draw parabola
+                ctx.beginPath();
+                ctx.lineWidth = 2.5;
+                ctx.strokeStyle = "rgba(96,165,250,0.95)";
+                for (var i = 0; i <= samples; i++) {
+                    var t = i / samples;
+                    var x = x0 + (x1 - x0) * t;
+                    var y = a * x * x + b * x + c;
+                    var px = tx(x), py = ty(y);
+                    if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+                }
+                ctx.stroke();
+
+                // mark vertex
+                ctx.fillStyle = "#ffd166";
+                ctx.beginPath(); ctx.arc(tx(xv), ty(yv), 4, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = "rgba(255,255,255,0.9)";
+                ctx.font = "11px monospace";
+                ctx.fillText("V (" + fmtNum(xv) + "," + fmtNum(yv) + ")", tx(xv) + 6, ty(yv) - 6);
+
+                // mark roots (if real)
+                if (roots && roots.length > 0) {
+                    ctx.fillStyle = "#fb8500";
+                    for (var k = 0; k < roots.length; k++) {
+                        var r = roots[k];
+                        if (!isNaN(r)) {
+                            ctx.beginPath(); ctx.arc(tx(r), ty(0), 5, 0, Math.PI * 2); ctx.fill();
+                            ctx.fillStyle = "rgba(255,255,255,0.95)";
+                            ctx.fillText("x" + (k + 1) + "=" + fmtNum(r), tx(r) + 6, ty(0) - 6);
+                            ctx.fillStyle = "#fb8500";
+                        }
+                    }
+                }
+            }
+
+            // DOM
+            var inpA = document.getElementById("inpA");
+            var inpB = document.getElementById("inpB");
+            var inpC = document.getElementById("inpC");
+            var btnSolve = document.getElementById("btnSolve");
+            var btnClear = document.getElementById("btnClear");
+            var btnCopyJson = document.getElementById("btnCopyJson");
+            var btnCopyText = document.getElementById("btnCopyText");
+            var raw = document.getElementById("raw");
+            var signatureBox = document.getElementById("signatureBox");
+            var stepsBox = document.getElementById("stepsBox");
+            var showSteps = document.getElementById("showSteps");
+            var autoUpdate = document.getElementById("autoUpdate");
+            var canvas = document.getElementById("graph");
+
+            function updateUI() {
+                var a = parseFloat(inpA.value) || 0;
+                var b = parseFloat(inpB.value) || 0;
+                var c = parseFloat(inpC.value) || 0;
+                var res = compute(a, b, c);
+
+                // update info fields
+                document.getElementById("nature").textContent = res.nature;
+                document.getElementById("delta").textContent = (res.discriminant === null ? "—" : fmtNum(res.discriminant));
+                document.getElementById("root1").textContent = res.root1 || "—";
+                document.getElementById("root2").textContent = res.root2 || "—";
+
+                // raw text area
+                var outTxt = "";
+                outTxt += "Nature: " + res.nature + "\\n";
+                if (res.discriminant !== null) outTxt += "Discriminant: " + fmtNum(res.discriminant) + "\\n";
+                if (res.root1) outTxt += "Root 1: " + res.root1 + "\\n";
+                if (res.root2) outTxt += "Root 2: " + res.root2 + "\\n\\n";
+                outTxt += res.art.replace(/\\\\n/g, "\\n") + "\\n\\n";
+                outTxt += "Signature: " + res.signature + "\\n";
+                raw.textContent = outTxt;
+
+                // steps
+                if (showSteps.checked) {
+                    stepsBox.style.display = "block";
+                    stepsBox.textContent = res.steps.join("\\n");
+                } else {
+                    stepsBox.style.display = "none";
+                }
+
+                // signature ascii art
+                signatureBox.innerHTML = "<code style='white-space:pre-wrap;font-family:monospace;color:#bde0fe'>" + res.art.replace(/\\\\n/g, "\\n") + "</code><div style='margin-top:8px;color:var(--muted)'>Signature: <strong>" + res.signature + "</strong></div>";
+
+                // plot
+                var rootsArr = [];
+                if (res.root1num !== null) rootsArr.push(res.root1num);
+                if (res.root2num !== null && res.root2num !== res.root1num) rootsArr.push(res.root2num);
+                try {
+                    plot(canvas, a, b, c, rootsArr);
+                } catch (e) {
+                    console.error("Plot error", e);
+                }
+            }
+
+            btnSolve.addEventListener("click", function (e) { updateUI(); });
+            btnClear.addEventListener("click", function (e) {
+                inpA.value = "1"; inpB.value = "0"; inpC.value = "-1";
+                updateUI();
+            });
+
+            btnCopyJson.addEventListener("click", function () {
+                var text = raw.textContent;
+                navigator.clipboard && navigator.clipboard.writeText(text).then(function () {
+                    btnCopyJson.textContent = "Copied ✓";
+                    setTimeout(function () { btnCopyJson.textContent = "Copy JSON"; }, 1200);
+                }, function () {
+                    alert("Copy failed — chọn & Ctrl+C");
+                });
+            });
+
+            btnCopyText.addEventListener("click", function () {
+                var human = "Quadratic result:\\n" + raw.textContent;
+                navigator.clipboard && navigator.clipboard.writeText(human).then(function () {
+                    btnCopyText.textContent = "Copied ✓";
+                    setTimeout(function () { btnCopyText.textContent = "Copy human-readable"; }, 1000);
+                }, function () { alert("Copy failed"); });
+            });
+
+            // auto update
+            [inpA, inpB, inpC].forEach(function (el) {
+                el.addEventListener("input", function () {
+                    if (autoUpdate.checked) updateUI();
+                });
+            });
+
+            // init
+            updateUI();
+
+        })();
+    </script>
+</body>
+</html>
